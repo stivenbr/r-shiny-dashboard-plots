@@ -1,50 +1,80 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
+# Modules
+source("modules/horsesModule.R");
+source("modules/jockeysModule.R");
+source("modules/ownersModule.R");
+source("modules/racesModule.R");
+source("modules/raceCoursesModule.R");
+source("modules/trainersModule.R");
 
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
-    )
+sidebar <- bs4DashSidebar(
+  status="orange",
+  bs4SidebarUserPanel("Grupo TFM", image = "https://freesvg.org/img/horse-white.png"),
+  
+  bs4SidebarMenu(
+    bs4SidebarMenuItem("Horses", tabName = "horsesTab", icon = icon("horse-head"), selected = TRUE),
+    bs4SidebarMenuItem("Jockeys", tabName = "jockeysTab", icon = icon("user-large")),
+    bs4SidebarMenuItem("Owners", tabName = "ownersTab", icon = icon("newspaper")),
+    bs4SidebarMenuItem("Races", tabName = "racesTab", icon = icon("flag-checkered")),
+    bs4SidebarMenuItem("RaceCourses", tabName = "raceCoursesTab", icon = icon("xmarks-lines")),
+    bs4SidebarMenuItem("Trainers", tabName = "trainersTab", icon = icon("person-chalkboard"))    
+  )
 )
 
-# Define server logic required to draw a histogram
-server <- function(input, output) {
+body <- bs4DashBody(
+  bs4TabItems(
+    # horses Tab
+    bs4TabItem(
+      tabName = "horsesTab",
+      horsesModuleUI("horses")
+    ),
+    
+    # Jockeys Tab
+    bs4TabItem(
+      tabName = "jockeysTab",
+      jockeysModuleUI("jockeys")
+    ),
+    
+    # Owners Tab
+    bs4TabItem(
+      tabName = "ownersTab",
+      ownersModuleUI("owners")
+    ),
+    
+    # Races Tab
+    bs4TabItem(
+      tabName = "racesTab",
+      racesModuleUI("races")
+    ),
+    
+    # Race Courses Tab
+    bs4TabItem(
+      tabName = "raceCoursesTab",
+      raceCoursesModuleUI("raceCourses")
+    ),
+    
+    # Trainers Tab
+    bs4TabItem(
+      tabName = "trainersTab",
+      trainersModuleUI("trainers")
+    )
+  )
+)
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+ui <- bs4DashPage(
+  dashboardHeader("Winning Horse"),
+  sidebar = sidebar,
+  body = body
+)
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
+server <- function(input, output, session) {
+  horsesModuleServer("horses")
+  jockeysModuleServer("jockeys")
+  ownersModuleServer("owners")
+  racesModuleServer("races")
+  raceCoursesModuleServer("raceCourses")
+  trainersModuleServer("trainers")
 }
 
 # Run the application 
