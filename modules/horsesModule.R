@@ -4,23 +4,27 @@ horsesModuleUI <- function(id){
   
   tagList(
     fluidRow(
-      column(
-        width = 6,
-        h1("Horses Tab !")
+      bs4Card(
+        width = 3,
+        title = "Filters",
+        status = "orange",
+        selectInput(ns("sex"), "Sex", choices = c()),
+        selectInput(ns("age"), "Age", choices = c(2:14))
       ),
       bs4Card(
-        width = 6,
-        title = "Biostats",
+        width = 9,
+        title = "Horses",
         status = "orange",
-        h1("Horses Tab 2 !")
+        p("Grafica Aqui")
+        # dataTableOutput("tableHorses")
       )
     )
   )
 }
 
-horsesModuleServer <- function(id){
+horsesModuleServer <- function(id, horses){
   moduleServer(id, function(input, output, session) {
-    
+    updateSelectInput(session, "sex", choices = c("ALL", unique(horses$SEX)))
   })
 }
 

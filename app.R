@@ -7,6 +7,7 @@ source("modules/ownersModule.R");
 source("modules/racesModule.R");
 source("modules/raceCoursesModule.R");
 source("modules/trainersModule.R");
+source("helpers/funDataSets.R");
 
 sidebar <- bs4DashSidebar(
   status="orange",
@@ -69,7 +70,7 @@ ui <- bs4DashPage(
 )
 
 server <- function(input, output, session) {
-  horsesModuleServer("horses")
+  horsesModuleServer("horses", cargaDataSet("horses"))
   jockeysModuleServer("jockeys")
   ownersModuleServer("owners")
   racesModuleServer("races")
