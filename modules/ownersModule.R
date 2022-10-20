@@ -17,7 +17,7 @@ ownersModuleUI <- function(id){
   )
 }
 
-ownersModuleServer <- function(id){
+ownersModuleServer <- function(id, owners){
   moduleServer(id, function(input, output, session) {
     
   })

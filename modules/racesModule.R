@@ -17,7 +17,7 @@ racesModuleUI <- function(id){
   )
 }
 
-racesModuleServer <- function(id){
+racesModuleServer <- function(id, races){
   moduleServer(id, function(input, output, session) {
     
   })

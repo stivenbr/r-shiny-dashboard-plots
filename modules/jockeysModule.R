@@ -17,7 +17,7 @@ jockeysModuleUI <- function(id){
   )
 }
 
-jockeysModuleServer <- function(id){
+jockeysModuleServer <- function(id, jockeys){
   moduleServer(id, function(input, output, session) {
     
   })

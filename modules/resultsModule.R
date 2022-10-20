@@ -1,23 +1,23 @@
-trainersModuleUI <- function(id){
+resultsModuleUI <- function(id){
   ns <- NS(id)
   
   tagList(
     fluidRow(
       column(
         width = 6,
-        h1("trainersTab !")
+        h1("resultsTab !")
       ),
       bs4Card(
         width = 6,
         title = "Biostats",
         status = "orange",
-        h1("trainersTab 2 !")
+        h1("resultsTab 2 !")
       )
     )
   )
 }
 
-trainersModuleServer <- function(id){
+resultsModuleServer <- function(id, results){
   moduleServer(id, function(input, output, session) {
     
   })
