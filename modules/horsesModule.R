@@ -23,8 +23,49 @@ horsesModuleUI <- function(id){
     dataTableOutput(ns("table"))
   )
   
+  # Plot UI
+  plotUI <- tagList(
+    fluidRow(
+      column(
+        width = 3,
+        selectInput(ns("rating"), "Rating", choices = c("AWT", "CHASE", "FLAT", "HURDLE"))
+      )
+    ),
+    hr(),
+    plotlyOutput(ns("plot"))
+  )
+  
   
   tagList(
+    
+    fluidRow(
+      valueBox(
+        value = 150,
+        subtitle = "New orders",
+        color = "primary",
+        icon = icon("cart-shopping"),
+        href = "#"
+      ),
+      valueBox(
+        elevation = 4,
+        value = "53%",
+        subtitle = "New orders",
+        color = "danger",
+        icon = icon("gears")
+      ),
+      valueBox(
+        value = "44",
+        subtitle = "User Registrations",
+        color = "warning",
+        icon = icon("sliders")
+      ),
+      valueBox(
+        value = "53%",
+        subtitle = "Bounce rate",
+        color = "success",
+        icon = icon("database")
+      )
+    ),
     
     fluidRow(
       bs4TabCard(
@@ -41,26 +82,11 @@ horsesModuleUI <- function(id){
         tabPanel(
           "Grafica",
           value = "grafica",
-          "Pepe 2 !"
+          plotUI
         )
       )
-    ),
-    
-
-    fluidRow(
-      bs4Card(
-        width = 3,
-        title = "Filters",
-        status = "orange",
-        selectInput(ns("rating"), "Rating", choices = c("AWT", "CHASE", "FLAT", "HURDLE"))
-      ),
-      bs4Card(
-        width = 9,
-        title = "Diagrama",
-        status = "orange",
-        plotlyOutput(ns("plot"))
-      )
     )
+    
   )
 }
 
@@ -108,9 +134,20 @@ horsesModuleServer <- function(id, horses){
       data = values$horses
       DT::datatable(
         data, 
+        class = 'cell-border stripe',
         options = list(
-          orderClasses = TRUE
-        )
+          dom = 'ti',
+          
+          # FixedColumns
+          scrollX = TRUE,
+          fixedColumns = list(leftColumns = 2),
+          
+          # Scroller
+          deferRender = TRUE,
+          scrollY = 400,
+          scroller = TRUE
+        ),
+        extensions = c('FixedColumns', 'Scroller')
       )
     })
     
