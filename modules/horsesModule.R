@@ -3,20 +3,34 @@ horsesModuleUI <- function(id){
   ns <- NS(id)
   
   # Table UI
-  tableUI <- tagList(
+  informacionUI <- tagList(
+    # table-form-filer
     fluidRow(
       column(
-        width = 3,
+        width = 2,
+        textInput(ns("name"), "Nombre")
+      ),
+      column(
+        width = 2,
         selectInput(ns("sex"), "Sexo", choices = c())
       ),
       column(
-        width = 3,
+        width = 2,
+        selectInput(ns("age"), "EDAD", choices = c())
+      ),
+      column(
+        width = 2,
         selectInput(ns("ratingawt"), "PuntosAWT", choices = c())
       ),
       column(
-        width = 3,
-        br(),
-        actionButton(ns("search"), "Search", status = "success", icon = icon("search"))
+        width = 2,
+        textInput(ns("trainerName"), "Entrenador")
+      )
+    ),
+    fluidRow(
+      column(
+        width = 12,
+        actionButton(ns("search"), "Search", status = "success", icon = icon("search"), class="btn-block")
       )
     ),
     hr(),
@@ -24,12 +38,21 @@ horsesModuleUI <- function(id){
   )
   
   # Plot UI
-  plotUI <- tagList(
+  ratingUI <- tagList(
     fluidRow(
       column(
         width = 3,
-        selectInput(ns("rating"), "Rating", choices = c("AWT", "CHASE", "FLAT", "HURDLE"))
-      )
+        selectInput(ns("type"), "Tipo diagrama", choices = c("Tabla" = "grid", "Agrupado" = "group", "Separado" = "separated")),
+      ),
+      column(
+        width = 3,
+        conditionalPanel(
+          ns = ns,
+          condition = "input.type == 'separated'",
+          selectInput(ns("rating"), "Rating", choices = c())  
+        )
+      ) 
+      
     ),
     hr(),
     plotlyOutput(ns("plot"))
@@ -74,15 +97,16 @@ horsesModuleUI <- function(id){
         status = "primary",
         solidHeader = TRUE,
         maximizable = TRUE,
+        selected = "rating",
         tabPanel(
-          "Tabla",
-          value = "tabla",
-          tableUI
+          "Información",
+          value = "information",
+          informacionUI
         ),
         tabPanel(
-          "Grafica",
-          value = "grafica",
-          plotUI
+          "Clasificación",
+          value = "rating",
+          ratingUI
         )
       )
     )
@@ -92,39 +116,62 @@ horsesModuleUI <- function(id){
 
 horsesModuleServer <- function(id, horses){
   moduleServer(id, function(input, output, session) {
+    # -----------------------------------------------
     # Functions
-    tableFilter <- function(data){
-      sex <- input$sex;
-      if(sex != "ALL"){
-        data <- data %>% dplyr::filter(SEX == sex) 
-      }
-      return(data)
-    }
-    tableColumns <- function(data){
-      data <- data %>% 
-        select(NAME, DATEOFBIRTH,SEX, TRAINERNAME, OWNERNAME, RATINGAWT, RATINGCHASE, RATINGFLAT, RATINGHURDLE) %>% 
-        rename(Nombre = NAME, Nacimiento = DATEOFBIRTH, Sexo = SEX, Entrenador = TRAINERNAME, Propietario = OWNERNAME, PuntosAWT = RATINGAWT, PuntosCHASE = RATINGCHASE, PuntosFLAT = RATINGFLAT, puntosHURDLE = RATINGHURDLE)
+    # -----------------------------------------------
+    # Filter data table by table-form-filer
+    tableFilter <- function(data, name, sex, age, ratingawt, trainerName){
+      trainerName <- stringr::str_to_lower(trainerName)
+      data <- data %>%
+        dplyr::filter(
+          if(name != "") stringr::str_detect(str_to_lower(NAME), name) else TRUE,
+          if(sex != "TODOS") SEX == sex else TRUE,
+          if(age != "TODOS") AGE2021 == age else TRUE,
+          if(ratingawt != "TODOS") RATINGAWT == ratingawt else TRUE,
+          if(trainerName != "") stringr::str_detect(str_to_lower(TRAINERNAME), trainerName) else TRUE
+        )
+      
       return(data)
     }
     
+    # Get name 
+    tableColumns <- function(data){
+      data <- data %>% 
+        dplyr::select(NAME, AGE2021, DATEOFBIRTH, SEX, TRAINERNAME, OWNERNAME, RATINGAWT, RATINGCHASE, RATINGFLAT, RATINGHURDLE) %>% 
+        dplyr::rename(Nombre = NAME, Edad = AGE2021, Nacimiento = DATEOFBIRTH, Sexo = SEX, Entrenador = TRAINERNAME, Propietario = OWNERNAME, PuntosAWT = RATINGAWT, PuntosCHASE = RATINGCHASE, PuntosFLAT = RATINGFLAT, puntosHURDLE = RATINGHURDLE)
+      return(data)
+    }
+    getNamesOfColumnsRatings <- function(data){
+      columns <- colnames(data);
+      columnsRating <- columns[startsWith(columns, "RATING")]
+      return(columnsRating)
+    }
+    
     # Update Filters
-    updateSelectInput(session, "sex", choices = c("ALL", unique(horses$SEX)))
-    updateSelectInput(session, "age", choices = c("ALL", sort(unique(horses$AGE))))
-    updateSelectInput(session, "ratingawt", choices = c("ALL", sort(unique(horses$RATINGAWT))))
+    updateSelectInput(session, "sex", choices = c("TODOS", unique(horses$SEX)))
+    updateSelectInput(session, "age", choices = c("TODOS", sort(unique(horses$AGE))))
+    updateSelectInput(session, "ratingawt", choices = c("TODOS", sort(unique(horses$RATINGAWT))))
+    
+    updateSelectInput(session, "rating", choices = getNamesOfColumnsRatings(horses))
     
     # Reactive
     values <- reactiveValues(horses = tableColumns(horses));
     
     # Reactive Functions
     filterPlot <- reactive({
-      data <- plotHorses(horses, input$rating)
+      data <- horses %>%
+        dplyr::group_by(AGE2021) %>% # group values by age
+        dplyr::summarize(across(starts_with("RATING"), ~ round(mean(.x, na.rm=TRUE), 2))) %>% # Filter columns by name and round values
+        reshape2::melt(id="AGE2021") %>% # Convert columns to rows by id
+        dplyr::filter(!is.na(value))
+      
       return(data)
     })
     
     # Events
     observeEvent(input$search, {
       data <- horses;
-      data <- tableFilter(data)
+      data <- tableFilter(data, input$name, input$sex, input$age, input$ratingawt, input$trainerName)
       data <- tableColumns(data)
       values$horses <- data
     })
@@ -153,8 +200,36 @@ horsesModuleServer <- function(id, horses){
     
     # Plot
     output$plot <- renderPlotly({
-      plot <- filterPlot()
-      plot
+      if(input$rating == "") return();
+      
+      type <- input$type
+      rating <- input$rating
+      data <- filterPlot()
+      
+      plot <- switch (input$type,
+        "grid" = {
+          plot <- ggplot(data, aes(x=AGE2021, y=value))
+          plot <- plot + facet_wrap(~variable)
+          plot
+        },
+        "group" = {
+          plot <- ggplot(data, aes(x=AGE2021, y=value, colour=variable))
+          plot
+        },
+        "separated" = {
+          data <- data %>% dplyr::filter(variable == input$rating)
+          plot <- ggplot(data, aes(x=AGE2021, y=value))
+          plot
+        }
+      )
+      
+      plot <- plot + 
+        geom_point() + 
+        geom_line() + 
+        labs(x = "Edad", y = "Valor") +
+        theme_minimal()
+      
+      return(plot);
     })
     
   })

@@ -4,6 +4,8 @@ library(DT)
 library(plotly)
 library(ggplot2)
 library(thematic)
+library(reshape2)
+library(stringr)
 
 # Data
 source("helpers/importData.R");
@@ -24,6 +26,7 @@ sidebar <- bs4DashSidebar(
   bs4SidebarUserPanel("Anderson Barbosa", image = "https://freesvg.org/img/horse-white.png"),
   
   bs4SidebarMenu(
+    bs4SidebarMenuItem("Dashboard", tabName = "dashboardTab", icon = icon("layer-group")),
     bs4SidebarMenuItem("Horses", tabName = "horsesTab", icon = icon("horse-head"), selected = TRUE),
     bs4SidebarMenuItem("Jockeys", tabName = "jockeysTab", icon = icon("user-large")),
     bs4SidebarMenuItem("Owners", tabName = "ownersTab", icon = icon("newspaper")),
@@ -35,6 +38,12 @@ sidebar <- bs4DashSidebar(
 
 body <- bs4DashBody(
   bs4TabItems(
+    # Dashboard
+    bs4TabItem(
+      tabName = "dashboardTab",
+      h1("HOLA!")
+    ),
+    
     # horses Tab
     bs4TabItem(
       tabName = "horsesTab",
@@ -85,9 +94,6 @@ header <- dashboardHeader(
 )
 
 ui <- bs4DashPage(
-  # preloader = list(html = tagList(spin_1(), "Loading ..."), color = "#343a40"),
-  dark = TRUE,
-  help = TRUE,
   fullscreen = TRUE,
   scrollToTop = TRUE,
   header = header,

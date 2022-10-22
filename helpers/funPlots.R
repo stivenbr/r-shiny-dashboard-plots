@@ -44,7 +44,7 @@ plotHorses <- function(horses,ratingType){
   data <- horsesRatingFilterPlot(horses, ratingType)
   plot <- ggplot(data, aes(AGE2021, RATING))
   if(nrow(data) != 0) plot <- plot + geom_point() + geom_line()
-  addLabs <- plot + labs(x="Edad", y=paste("Rating",ratingType))
+  addLabs <- plot + labs(x="Edad", y=paste("Rating ",ratingType))
   addTheme <- addLabs + theme_minimal()
   return(addTheme)
 }
