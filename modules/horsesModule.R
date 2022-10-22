@@ -134,39 +134,47 @@ horsesModuleServer <- function(id, horses){
       return(data)
     }
     
-    # Get name 
+    # Get name by print columns in view
     tableColumns <- function(data){
       data <- data %>% 
         dplyr::select(NAME, AGE2021, DATEOFBIRTH, SEX, TRAINERNAME, OWNERNAME, RATINGAWT, RATINGCHASE, RATINGFLAT, RATINGHURDLE) %>% 
         dplyr::rename(Nombre = NAME, Edad = AGE2021, Nacimiento = DATEOFBIRTH, Sexo = SEX, Entrenador = TRAINERNAME, Propietario = OWNERNAME, PuntosAWT = RATINGAWT, PuntosCHASE = RATINGCHASE, PuntosFLAT = RATINGFLAT, puntosHURDLE = RATINGHURDLE)
       return(data)
     }
+    
+    # get names of columns start with by "ratings"
     getNamesOfColumnsRatings <- function(data){
       columns <- colnames(data);
       columnsRating <- columns[startsWith(columns, "RATING")]
       return(columnsRating)
     }
     
-    # Update Filters
-    updateSelectInput(session, "sex", choices = c("TODOS", unique(horses$SEX)))
-    updateSelectInput(session, "age", choices = c("TODOS", sort(unique(horses$AGE))))
-    updateSelectInput(session, "ratingawt", choices = c("TODOS", sort(unique(horses$RATINGAWT))))
-    
-    updateSelectInput(session, "rating", choices = getNamesOfColumnsRatings(horses))
-    
-    # Reactive
-    values <- reactiveValues(horses = tableColumns(horses));
-    
-    # Reactive Functions
-    filterPlot <- reactive({
-      data <- horses %>%
+    # get data rating for plot
+    getDataRatingForPlot <- function(data){
+      data <- data %>%
         dplyr::group_by(AGE2021) %>% # group values by age
         dplyr::summarize(across(starts_with("RATING"), ~ round(mean(.x, na.rm=TRUE), 2))) %>% # Filter columns by name and round values
         reshape2::melt(id="AGE2021") %>% # Convert columns to rows by id
         dplyr::filter(!is.na(value))
       
       return(data)
-    })
+    }
+    
+    # -----------------------------------------------
+    # Variables
+    # -----------------------------------------------
+    dataRatingPlot <- getDataRatingForPlot(horses);
+    
+    # -----------------------------------------------
+    # Update Filters
+    # -----------------------------------------------
+    updateSelectInput(session, "sex", choices = c("TODOS", unique(horses$SEX)))
+    updateSelectInput(session, "age", choices = c("TODOS", sort(unique(horses$AGE))))
+    updateSelectInput(session, "ratingawt", choices = c("TODOS", sort(unique(horses$RATINGAWT))))
+    updateSelectInput(session, "rating", choices = getNamesOfColumnsRatings(horses))
+    
+    # Reactive
+    values <- reactiveValues(horses = tableColumns(horses));
     
     # Events
     observeEvent(input$search, {
@@ -204,20 +212,19 @@ horsesModuleServer <- function(id, horses){
       
       type <- input$type
       rating <- input$rating
-      data <- filterPlot()
       
       plot <- switch (input$type,
         "grid" = {
-          plot <- ggplot(data, aes(x=AGE2021, y=value))
+          plot <- ggplot(dataRatingPlot, aes(x=AGE2021, y=value))
           plot <- plot + facet_wrap(~variable)
           plot
         },
         "group" = {
-          plot <- ggplot(data, aes(x=AGE2021, y=value, colour=variable))
+          plot <- ggplot(dataRatingPlot, aes(x=AGE2021, y=value, colour=variable))
           plot
         },
         "separated" = {
-          data <- data %>% dplyr::filter(variable == input$rating)
+          data <- dataRatingPlot %>% dplyr::filter(variable == input$rating)
           plot <- ggplot(data, aes(x=AGE2021, y=value))
           plot
         }
@@ -234,5 +241,3 @@ horsesModuleServer <- function(id, horses){
     
   })
 }
-
-
