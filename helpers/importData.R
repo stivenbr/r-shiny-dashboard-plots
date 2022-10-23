@@ -1,36 +1,54 @@
-#Corrección del Betting Ratio al estar expresado en una cadena de caracteres
-corrigeResults <- function(results){
-  results = tidyr::separate(results, col = BETTINGRATIO, into = c("divisor","dividendo"), sep = "/", remove=TRUE)
-  results = results %>% dplyr::mutate(BETTINGRATIO = as.integer(divisor)/ as.integer(dividendo))
-  results = results %>% dplyr::select(- c("divisor", "dividendo"))
-  results = results %>% dplyr::filter(YEAR == 2021)
-  return(results)
-}
-
-corrigeHorses <- function(horses){
-  #Da valor al sexo no especificado
-  horses <- horses %>% dplyr::mutate(SEX = ifelse(SEX == "", "UNREGISTERED", SEX))
-  return(horses)
-}
-
 importData <- function(nombreFichero){
   salida <- switch(
     nombreFichero,
-      "horses" = {
-        data <- read.csv('./data/horses.csv')
-        salida <- corrigeHorses(data)
-        salida
-      },
-      "jockeys" = read.csv('./data/jockeys.csv'),
-      "owners" = read.csv('./data/owners.csv'),
-      "racecourses" = read.csv('./data/racecourses.csv'),
-      "races" = read.csv('./data/races.csv'),
-      "trainers" = read.csv('./data/trainers.csv'),
-      "results" = {
-        data <- read.csv('./data/Results_Global_2021.csv')
-        salida <- corrigeResults(data) #Aplicamos corrección de bettingRatio
-        salida
-      }
+      "horses" = importDataHorses(),
+      "jockeys" = importDataJockeys(),
+      "owners" = importDataOwners(),
+      "racecourses" = importDataRaceCourses(),
+      "races" = importDataRaces(),
+      "trainers" = importDataRaces(), 
+      "results" = importDataResults()
   )
   return(salida)
+}
+
+importDataHorses <- function(){
+  data <- read.csv('./data/horses.csv')
+  data$SEX[data$SEX==""] <- "UNREGISTERED"
+  return(data)
+}
+
+importDataJockeys <- function(){
+  data <- read.csv('./data/jockeys.csv')
+  return(data)
+}
+
+importDataOwners <- function(){
+  data <- read.csv('./data/owners.csv')
+  return(data)
+}
+
+importDataRaceCourses <- function(){
+  data <- read.csv('./data/racecourses.csv')
+  return(data)
+}
+
+importDataRaces <- function(){
+  data <- read.csv('./data/races.csv')
+  return(data)
+}
+
+importDataTrainers <- function(){
+  data <- read.csv('./data/trainers.csv')
+  return(data)
+}
+
+importDataResults <- function(year = 2021){
+  results <- read.csv('./data/Results_Global_2021.csv') %>%
+    dplyr::filter(YEAR == year) %>%
+    tidyr::separate(col = BETTINGRATIO, into = c("divisor","dividendo"), sep = "/", convert=TRUE) %>%
+    dplyr::mutate(BETTINGRATIORESULT = round((divisor/dividendo), 2) ) %>%
+    dplyr::select(-c("divisor", "dividendo"))
+
+  return(results)
 }

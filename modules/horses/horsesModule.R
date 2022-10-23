@@ -57,8 +57,8 @@ horsesModuleUI <- function(id){
     hr(),
     plotlyOutput(ns("plot"))
   )
-  
-  
+   
+   
   tagList(
     
     fluidRow(
@@ -119,46 +119,7 @@ horsesModuleServer <- function(id, horses){
     # -----------------------------------------------
     # Functions
     # -----------------------------------------------
-    # Filter data table by table-form-filer
-    tableFilter <- function(data, name, sex, age, ratingawt, trainerName){
-      trainerName <- stringr::str_to_lower(trainerName)
-      data <- data %>%
-        dplyr::filter(
-          if(name != "") stringr::str_detect(str_to_lower(NAME), name) else TRUE,
-          if(sex != "TODOS") SEX == sex else TRUE,
-          if(age != "TODOS") AGE2021 == age else TRUE,
-          if(ratingawt != "TODOS") RATINGAWT == ratingawt else TRUE,
-          if(trainerName != "") stringr::str_detect(str_to_lower(TRAINERNAME), trainerName) else TRUE
-        )
-      
-      return(data)
-    }
-    
-    # Get name by print columns in view
-    tableColumns <- function(data){
-      data <- data %>% 
-        dplyr::select(NAME, AGE2021, DATEOFBIRTH, SEX, TRAINERNAME, OWNERNAME, RATINGAWT, RATINGCHASE, RATINGFLAT, RATINGHURDLE) %>% 
-        dplyr::rename(Nombre = NAME, Edad = AGE2021, Nacimiento = DATEOFBIRTH, Sexo = SEX, Entrenador = TRAINERNAME, Propietario = OWNERNAME, PuntosAWT = RATINGAWT, PuntosCHASE = RATINGCHASE, PuntosFLAT = RATINGFLAT, puntosHURDLE = RATINGHURDLE)
-      return(data)
-    }
-    
-    # get names of columns start with by "ratings"
-    getNamesOfColumnsRatings <- function(data){
-      columns <- colnames(data);
-      columnsRating <- columns[startsWith(columns, "RATING")]
-      return(columnsRating)
-    }
-    
-    # get data rating for plot
-    getDataRatingForPlot <- function(data){
-      data <- data %>%
-        dplyr::group_by(AGE2021) %>% # group values by age
-        dplyr::summarize(across(starts_with("RATING"), ~ round(mean(.x, na.rm=TRUE), 2))) %>% # Filter columns by name and round values
-        reshape2::melt(id="AGE2021") %>% # Convert columns to rows by id
-        dplyr::filter(!is.na(value))
-      
-      return(data)
-    }
+    source("./modules/horses/horsesService.R");
     
     # -----------------------------------------------
     # Variables
@@ -171,12 +132,17 @@ horsesModuleServer <- function(id, horses){
     updateSelectInput(session, "sex", choices = c("TODOS", unique(horses$SEX)))
     updateSelectInput(session, "age", choices = c("TODOS", sort(unique(horses$AGE))))
     updateSelectInput(session, "ratingawt", choices = c("TODOS", sort(unique(horses$RATINGAWT))))
-    updateSelectInput(session, "rating", choices = getNamesOfColumnsRatings(horses))
+    updateSelectInput(session, "rating", choices = getColumnsNamesOfRatings(horses))
     
+    # -----------------------------------------------
     # Reactive
+    # -----------------------------------------------
+    # Values
     values <- reactiveValues(horses = tableColumns(horses));
     
+    # -----------------------------------------------
     # Events
+    # -----------------------------------------------
     observeEvent(input$search, {
       data <- horses;
       data <- tableFilter(data, input$name, input$sex, input$age, input$ratingawt, input$trainerName)
@@ -184,26 +150,12 @@ horsesModuleServer <- function(id, horses){
       values$horses <- data
     })
     
+    # -----------------------------------------------
+    # Output
+    # -----------------------------------------------
     # Table
     output$table <- renderDataTable({
-      data = values$horses
-      DT::datatable(
-        data, 
-        class = 'cell-border stripe',
-        options = list(
-          dom = 'ti',
-          
-          # FixedColumns
-          scrollX = TRUE,
-          fixedColumns = list(leftColumns = 2),
-          
-          # Scroller
-          deferRender = TRUE,
-          scrollY = 400,
-          scroller = TRUE
-        ),
-        extensions = c('FixedColumns', 'Scroller')
-      )
+      getDataTable(values$horses)
     })
     
     # Plot

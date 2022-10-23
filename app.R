@@ -6,18 +6,18 @@ library(ggplot2)
 library(thematic)
 library(reshape2)
 library(stringr)
-
+ 
 # Data
-source("helpers/importData.R");
-source("helpers/funPlots.R");
+source("./helpers/globalService.R");
+source("./helpers/importData.R");
 
 # Modules
-source("modules/horsesModule.R");
-source("modules/jockeysModule.R");
-source("modules/ownersModule.R");
-source("modules/racesModule.R");
-source("modules/raceCoursesModule.R");
-source("modules/resultsModule.R");
+source("./modules/horses/horsesModule.R");
+source("./modules/jockeys/jockeysModule.R");
+source("./modules/owners/ownersModule.R");
+source("./modules/races/racesModule.R");
+source("./modules/raceCourses/raceCoursesModule.R");
+source("./modules/results/resultsModule.R");
 
 
 sidebar <- bs4DashSidebar(
