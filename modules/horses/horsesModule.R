@@ -2,7 +2,7 @@
 horsesModuleUI <- function(id){
   ns <- NS(id)
   
-  # Table UI
+  # View UI
   informacionUI <- tagList(
     # table-form-filer
     fluidRow(
@@ -58,9 +58,8 @@ horsesModuleUI <- function(id){
     plotlyOutput(ns("plot"))
   )
    
-   
   tagList(
-    
+    h1("Horses"),
     fluidRow(
       valueBox(
         value = 150,
@@ -97,7 +96,7 @@ horsesModuleUI <- function(id){
         status = "primary",
         solidHeader = TRUE,
         maximizable = TRUE,
-        selected = "rating",
+        selected = "information",
         tabPanel(
           "Información",
           value = "information",

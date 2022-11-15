@@ -1,4 +1,4 @@
-ownersModuleUI <- function(id){
+trainersModuleUI <- function(id){
   ns <- NS(id)
   
   # --------------------------
@@ -13,7 +13,7 @@ ownersModuleUI <- function(id){
   # UI
   # --------------------------
   tagList(
-    h1("Propietarios"),
+    h1("Entrenadores"),
     fluidRow(
       bs4TabCard(
         width = 12,
@@ -32,26 +32,26 @@ ownersModuleUI <- function(id){
   )
 }
 
-ownersModuleServer <- function(id, owners){
+trainersModuleServer <- function(id, trainers){
   moduleServer(id, function(input, output, session) {
     # -----------------------------------------------
     # Functions
     # -----------------------------------------------
-    source("./modules/owners/ownersService.R")
+    source("./modules/trainers/trainersService.R")
     
     # -----------------------------------------------
     # Reactive
     # -----------------------------------------------
     # Values
-    values <- reactiveValues(owners = tableColumns(owners));
+    values <- reactiveValues(trainers = tableColumns(trainers));
     
     # -----------------------------------------------
     # Output
     # -----------------------------------------------
     # Table
     output$table <- renderDataTable({
-      getDataTable(values$owners)
+      getDataTable(values$trainers)
     })
-
+    
   })
 }

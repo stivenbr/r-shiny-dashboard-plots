@@ -6,7 +6,7 @@ importData <- function(nombreFichero){
       "owners" = importDataOwners(),
       "racecourses" = importDataRaceCourses(),
       "races" = importDataRaces(),
-      "trainers" = importDataRaces(), 
+      "trainers" = importDataTrainers(), 
       "results" = importDataResults()
   )
   return(salida)

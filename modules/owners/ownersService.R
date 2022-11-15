@@ -1,0 +1,7 @@
+# Get name by print columns in view
+tableColumns <- function(data){
+  data <- data %>% 
+    dplyr::select(RANKING, OWNERNAME, CHAMPIONSHIPTYPE, LEADINGEARNERHORSE, TOTALOWNERCHAMPIONSHIPSRUNS, TOTALOWNERCHAMPIONSHIPWINS, TOTALOWNERPRIZEMONEYWON) %>% 
+    dplyr::rename(Ranking = RANKING, Nombre = OWNERNAME, Categoria = CHAMPIONSHIPTYPE, CaballoPrincipal = LEADINGEARNERHORSE, Carreras = TOTALOWNERCHAMPIONSHIPSRUNS, Victorias = TOTALOWNERCHAMPIONSHIPWINS, Premios = TOTALOWNERPRIZEMONEYWON)
+  return(data)
+}

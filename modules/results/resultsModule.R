@@ -1,17 +1,32 @@
 resultsModuleUI <- function(id){
   ns <- NS(id)
   
+  # --------------------------
+  # TAB Información
+  # --------------------------
+  informationTAB <- tagList(
+    hr(),
+    dataTableOutput(ns("table"))
+  )
+  
+  # --------------------------
+  # UI
+  # --------------------------
   tagList(
+    h1("Resultados"),
     fluidRow(
-      column(
-        width = 6,
-        h1("resultsTab !")
-      ),
-      bs4Card(
-        width = 6,
-        title = "Biostats",
-        status = "orange",
-        h1("resultsTab 2 !")
+      bs4TabCard(
+        width = 12,
+        type = "tabs",
+        status = "primary",
+        solidHeader = TRUE,
+        maximizable = TRUE,
+        selected = "information",
+        tabPanel(
+          "Información",
+          value = "information",
+          informationTAB
+        )
       )
     )
   )
@@ -19,6 +34,23 @@ resultsModuleUI <- function(id){
 
 resultsModuleServer <- function(id, results){
   moduleServer(id, function(input, output, session) {
+    # -----------------------------------------------
+    # Functions
+    # -----------------------------------------------
+    source("./modules/results/resultsService.R")
+
+    # -----------------------------------------------
+    # Reactive
+    # -----------------------------------------------
+    # Values
+    values <- reactiveValues(results = tableColumns(results));
     
+    # -----------------------------------------------
+    # Output
+    # -----------------------------------------------
+    # Table
+    output$table <- renderDataTable({
+      getDataTable(values$results)
+    })
   })
 }
