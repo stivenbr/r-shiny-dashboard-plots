@@ -24,7 +24,7 @@ source("./modules/results/resultsModule.R");
 sidebar <- bs4DashSidebar(
   status="primary",
   skin = "light",
-  bs4SidebarUserPanel("Anderson Barbosa", image = "https://freesvg.org/img/horse-white.png"),
+  bs4SidebarUserPanel("Anderson, Bautista, David, Jorge", image = "https://freesvg.org/img/horse-white.png"),
   
   bs4SidebarMenu(
     bs4SidebarMenuItem("Dashboard", tabName = "dashboardTab", icon = icon("layer-group")),
